@@ -100,9 +100,9 @@ Sigma_0 = np.empty((K, D, D))
 for k in range(K):
     Sigma_0[k] = np.identity(D)
 nu_0 = np.ones(K) * D
-Lambda_0 = np.empty((K, D, D))
+Psi_0 = np.empty((K, D, D))
 for k in range(K):
-    Lambda_0[k] = np.identity(D)
+    Psi_0[k] = np.identity(D)
 
 #%% Initialize local parameters.
 pi = stats.dirichlet.rvs(alpha_0)[0]
@@ -110,7 +110,7 @@ mu = np.empty((K, D))
 Sigma = np.empty((K, D, D))
 for k in range(K):
     mu[k] = stats.multivariate_normal.rvs(mean=mu_0[k], cov=Sigma_0[k])
-    Sigma[k] = stats.invwishart.rvs(df=nu_0[k], scale=Lambda_0[k])
+    Sigma[k] = stats.invwishart.rvs(df=nu_0[k], scale=Psi_0[k])
 
 #%% Define tmp variables.
 k_vec = np.zeros(K)
@@ -154,9 +154,9 @@ for t in trange(ITERATION):
 
         # Resampling Sigma_k.
         tmp = np.matrix(data_k - mu[k])
-        Lambda_hat = tmp.T.dot(tmp) + Lambda_0[k]
+        Psi_hat = tmp.T.dot(tmp) + Psi_0[k]
         nu_hat = M_k + nu_0[k]
-        Sigma[k] = stats.invwishart.rvs(df=nu_hat, scale=Lambda_hat)
+        Sigma[k] = stats.invwishart.rvs(df=nu_hat, scale=Psi_hat)
 
         # Resampling mu_k.
         Sigma_hat = np.array((M_k * np.matrix(Sigma[k]).I + np.matrix(Sigma_0[k]).I).I)
