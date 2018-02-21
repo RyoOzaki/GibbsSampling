@@ -149,17 +149,17 @@ for t in trange(ITERATION):
         data_k = np.matrix(datas[hidden_state == k])
         if data_k.shape[0] is 0:
             data_k = D_zeros
-        M_k = hidden_state_count[k]
+        m_k = hidden_state_count[k]
         sum_data_k = data_k.sum(axis=0)
 
         # Resampling Sigma_k.
         tmp = np.matrix(data_k - mu[k])
         Psi_hat = tmp.T.dot(tmp) + Psi_0[k]
-        nu_hat = M_k + nu_0[k]
+        nu_hat = m_k + nu_0[k]
         Sigma[k] = stats.invwishart.rvs(df=nu_hat, scale=Psi_hat)
 
         # Resampling mu_k.
-        Sigma_hat = np.array((M_k * np.matrix(Sigma[k]).I + np.matrix(Sigma_0[k]).I).I)
+        Sigma_hat = np.array((m_k * np.matrix(Sigma[k]).I + np.matrix(Sigma_0[k]).I).I)
         mu_hat = np.array((sum_data_k.dot(np.matrix(Sigma[k]).I) + mu_0[k].dot(np.matrix(Sigma_0[k]).I)).dot(Sigma_hat))[0]
         mu[k] = stats.multivariate_normal.rvs(mean=mu_hat, cov=Sigma_hat)
 
