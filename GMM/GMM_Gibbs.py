@@ -183,4 +183,4 @@ for i in range(50):
 ax_pi.set_title("Gibbs sampling for GMM.")
 anim = animation.ArtistAnimation(fig, ims, interval=100, repeat_delay=0, blit=True)
 #plt.show()
-anim.save('GMM_Gibbs.gif', writer='imagemagick', fps=10)
+anim.save('GMM/GMM_Gibbs_result.gif', writer='imagemagick', fps=10)
