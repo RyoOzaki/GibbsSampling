@@ -1,2 +1,0 @@
-#Gibbs sampling results.
-
