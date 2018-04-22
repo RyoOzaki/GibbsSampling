@@ -1,10 +1,9 @@
 #%% Import parts.
-%matplotlib inline
+# %matplotlib inline
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import gridspec
 from matplotlib import patches
-import matplotlib.animation as animation
 import scipy.stats as stats
 from tqdm import trange
 
@@ -15,10 +14,9 @@ def counting(datas, size, out=None):
     else:
         cnt = out
         cnt[:] = 0
-    if datas is None:
-        return cnt
-    for i in range(size):
-        cnt[i] = (datas == i).sum()
+    if datas is not None:
+        for i in range(size):
+            cnt[i] = (datas == i).sum()
     return cnt
 
 def rad2deg(rad):
@@ -73,24 +71,26 @@ plt.rcParams["font.size"] = 18
 fig = plt.figure(figsize=(10,8))
 gs = gridspec.GridSpec(2, 1, height_ratios=[1, 6])
 ax_pi = plt.subplot(gs[0])
-truth_im = []
-truth_im.extend(plot_mixingrate(ax_pi, pi_truth, colors=colors[:K_truth]))
+plot_mixingrate(ax_pi, pi_truth, colors=colors[:K_truth])
 #ax.tick_params(labelbottom="off",bottom="off")# Delete x axis.
-ax_pi.tick_params(labelleft="off",left="off")# Delete y axis.
+ax_pi.tick_params(labelleft="off", left="off")# Delete y axis.
 ax_pi.set_xlim(0.0, 1.0)
 ax_pi.set_ylim(-1.0, 1.0)
 ax_data = plt.subplot(gs[1])
 for k in range(K_truth):
-    truth_im.append(plot_datas(ax_data, datas[hidden_state_truth == k], color=colors[k]))
-    truth_im.append(plot_mean(ax_data, mean_truth[k], color=colors[k]))
-    truth_im.append(plot_covariance(ax_data, mean_truth[k], cov_truth[k], color=colors[k]))
+    plot_datas(ax_data, datas[hidden_state_truth == k], color=colors[k])
+    plot_mean(ax_data, mean_truth[k], color=colors[k])
+    plot_covariance(ax_data, mean_truth[k], cov_truth[k], color=colors[k])
 xlim = ax_data.get_xlim()
 ylim = ax_data.get_ylim()
 width = xlim[1] - xlim[0]
 height = ylim[1] - ylim[0]
-ax_data.set_xlim(0.2 * -width + xlim[0], 0.2 * width + xlim[1])
-ax_data.set_ylim(0.2 * -height + ylim[0], 0.2 * height + ylim[1])
+xlim = (0.2 * -width + xlim[0], 0.2 * width + xlim[1])
+ylim = (0.2 * -height + ylim[0], 0.2 * height + ylim[1])
+ax_data.set_xlim(xlim)
+ax_data.set_ylim(ylim)
 #plt.show()
+plt.savefig("tmp/truth.png")
 
 #%% Initialize hyper parameters.
 K = 4
@@ -118,11 +118,6 @@ D_zeros = np.matrix(np.zeros(D))
 p_yi = np.empty((N, K))
 hidden_state = np.zeros(N, dtype=int)
 hidden_state_count = np.zeros(K, dtype=int)
-
-#%% Define animation objects.
-ims = []
-for i in range(50):
-    ims.append(truth_im)
 
 #%% Start Gibbs sampling.
 for t in trange(ITERATION):
@@ -164,23 +159,28 @@ for t in trange(ITERATION):
         mu[k] = stats.multivariate_normal.rvs(mean=mu_hat, cov=Sigma_hat)
 
     # Save animation phase.
-    tmp_im = []
-    tmp_im.extend(plot_mixingrate(ax_pi, pi, colors=colors[:K]))
-    tmp_im.append(ax_data.annotate("ITERATION : %3d" % (t+1,), xy=(0.7,0.08), xycoords='axes fraction', fontsize=15, bbox=dict(boxstyle="round", fc="white"), zorder=3))
+    plt.cla()
+    plot_mixingrate(ax_pi, pi, colors=colors[:K])
     for k in range(K):
         if hidden_state_count[k] != 0:
             data_k = datas[hidden_state == k]
-            tmp_im.append(plot_datas(ax_data, data_k, color=colors[k]))
-        tmp_im.append(plot_mean(ax_data, mu[k], color=colors[k]))
-        tmp_im.append(plot_covariance(ax_data, mu[k], Sigma[k], color=colors[k]))
-    ims.append(tmp_im)
+            plot_datas(ax_data, data_k, color=colors[k])
+        plot_mean(ax_data, mu[k], color=colors[k])
+        plot_covariance(ax_data, mu[k], Sigma[k], color=colors[k])
+    ax_data.set_xlim(xlim)
+    ax_data.set_ylim(ylim)
+    # plt.pause(0.1)
+    plt.savefig("tmp/frame{0:03d}.png".format(t+1))
 
-#%% Add animation interval
-for i in range(50):
-    ims.append(ims[-1])
-
-#%% Plot phase.
-ax_pi.set_title("Gibbs sampling for GMM.")
-anim = animation.ArtistAnimation(fig, ims, interval=100, repeat_delay=0, blit=True)
-#plt.show()
-anim.save('GMM/GMM_Gibbs_result.gif', writer='imagemagick', fps=10)
+plt.cla()
+plot_mixingrate(ax_pi, pi, colors=colors[:K])
+for k in range(K):
+    if hidden_state_count[k] != 0:
+        data_k = datas[hidden_state == k]
+        plot_datas(ax_data, data_k, color=colors[k])
+    plot_mean(ax_data, mu[k], color=colors[k])
+    plot_covariance(ax_data, mu[k], Sigma[k], color=colors[k])
+ax_data.set_xlim(xlim)
+ax_data.set_ylim(ylim)
+# plt.show()
+plt.savefig("tmp/final.png")
