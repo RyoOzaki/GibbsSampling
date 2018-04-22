@@ -1,12 +1,11 @@
 # GibbsSampling
-This is Python library for sample of gibbs sampling that made by Ryo Ozaki.
-And some directory have \*.ipynb files.
-You can see that at local.
-It doesn't work well at github.
-<br>
-\*.ipynb files written in Japanese, but feature I make in English.
+This is Python library for sample of Gibbs sampling that made by Ryo Ozaki.
+And some directory have document.pdf.
+Basically, every document is written in English.
 
 # Author
 Ryo Ozaki,
-At Ritsumeikan Univercity in Japan,
+Ritsumeikan University,
+Graduate School of Information Science and Engineering,
+Emergent Systems Laboratory,
 emal: ryo.ozaki[at]em.ci.ritsumei.ac.jp
