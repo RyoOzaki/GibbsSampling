@@ -1,6 +1,24 @@
 \documentclass[a4paper]{article}
 
 \usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amssymb, amsmath}
+\usepackage{ascmac}
+
+\DeclareMathOperator{\Bern}{\rm Bern}
+\DeclareMathOperator{\Bin}{\rm Bin}
+\DeclareMathOperator{\Po}{\rm Po}
+\DeclareMathOperator{\Cat}{\rm Cat}
+\DeclareMathOperator{\Mult}{\rm Mult}
+\DeclareMathOperator{\Beta}{\rm Beta}
+\DeclareMathOperator{\Dir}{\rm Dir}
+\DeclareMathOperator{\N}{\rm N}
+\DeclareMathOperator{\InvW}{\mathcal{IW}}
+\DeclareMathOperator{\NIW}{\mathcal{NIW}}
+
+\newcommand{\relmiddle}[1]{\mathrel{}\middle#1\mathrel{}}
+
+\newcommand{\proptoas}[1]{\overset{#1}{\propto}}
+
 \usepackage{braket}
 \usepackage{url}
 
@@ -21,19 +39,18 @@ This section shows the graphical model of Gaussian mixture model (GMM) which wer
 
 The probabilistic generative process of GMM is shown below.
 \begin{eqnarray}
-	\lambda &=& \Set{ \alpha_0, \mu_0, \Sigma_0, \nu_0, \Psi_0 } \\
-	\theta &=& \Set{ \pi, z_{1:N}, \mu_{1:K}, \Sigma_{1:K} } \\
+	\lambda &=& \Set{\alpha_0, \lambda_0, \boldsymbol{\mu_0}, \nu_0, \Psi_0}\\
+	\theta &=& \Set{\boldsymbol{\pi}, z_{1:N}, \boldsymbol{\mu_{1:K}}, \Sigma_{1:K}}\\
 	\nonumber \\
-	\pi &\sim& {\rm Dir}(\pi | \alpha_0) \\
-	\mu_k &\sim& {\rm N}(\mu_k | \mu_0, \Sigma_0) \\
-	\Sigma_k &\sim& {\rm W}^{-1}(\Sigma_k | \nu_0, \Psi_0) \\
-	z_i &\sim& {\rm Cat}(z_i | \pi) \\
-	x_i &\sim& {\rm N}(x_i | \mu_{z_i}, \Sigma_{z_i})\\
+	\boldsymbol{\pi} &\sim& \Dir(\boldsymbol{\pi} | \boldsymbol{\alpha_0})\\
+	(\boldsymbol{\mu_k}, \Sigma_k) &\sim& \NIW(\boldsymbol{\mu}, \Sigma | \boldsymbol{\mu_0}, \lambda_0, \Psi_0, \nu_0) \\
+	z_i &\sim& \Cat(z | \boldsymbol{\pi}) \\
+	\boldsymbol{x_i} &\sim& \N(\boldsymbol{x} | \boldsymbol{\mu}_{z_i}, \Sigma_{z_i})\\
 	\nonumber \\
 	k &=& 1, 2, \ldots, K\\
 	i &=& 1, 2, \ldots, N
 \end{eqnarray}
-Here, $\lambda$ represents the set of hyperparameters, $\theta$ represents the set of parameters, ${\rm Dir}$ represents the Dirichlet distribution, ${\rm N}$ represents the normal distribution, ${\rm W}^{-1}$ represents the inverse-Wishart distribution, ${\rm Cat}$ represents the categorical distribution.
+Here, $\lambda$ represents the set of hyperparameters, $\theta$ represents the set of parameters, $\Dir$ represents the Dirichlet distribution, $\N$ represents the normal distribution, $\NIW$ represents the normal-inverse-Wishart distribution, $\Cat$ represents the categorical distribution.
 
 \section{Posterior distribution}
 This section shows posterior distributions of the $\theta$.
@@ -41,25 +58,23 @@ This section shows posterior distributions of the $\theta$.
 \subsection{Posterior distribution of $z_i$}
 The posterior distribution of $z_i$ is represented as follows.
 \begin{eqnarray}
-	p(z_i = k | x_i, \pi, \mu_{1:K}, \Sigma_{1:K}) &\propto& p(x_i | z_i = k, \pi, \mu_{1:K}, \Sigma_{1:K}) \nonumber \\
-	&&~~~\times p(z_i = k | \pi, \mu_{1:K}, \Sigma_{1:K})\\
-		&\propto& p(x_i | z_i = k, \mu_k, \Sigma_k) p(z_i = k | \pi)\\
-	&=& {\rm N}(x_i | \mu_k, \Sigma_k) {\rm Cat(z_i = k | \pi)}\\
-	&=& {\rm Cat}(z_i = k | \hat{\pi})\\
+	p(z_i = k | x_i, \boldsymbol{\pi}, \boldsymbol{\mu_{1:K}}, \Sigma_{1:K}) &\proptoas{z_i}& p(x_i | z_i = k, \boldsymbol{\mu_k}, \Sigma_k) p(z_i = k | \boldsymbol{\pi})\\
+	&=& \N(\boldsymbol{x_i} | \boldsymbol{\mu_k}, \Sigma_k) \Cat(z_i = k | \boldsymbol{\pi})\\
+	&=& \Cat(z_i = k | \boldsymbol{\pi^*})\\
 	\nonumber \\
-	\hat{\pi}^{-}_{k} &=& {\rm N}(x_i | \mu_k, \Sigma_k) \times \pi_k \\
-	\hat{\pi}_k &=& \frac{\hat{\pi}^{-}_k}{\sum_{l = 1}^{K}{\hat{\pi}^{-}_l}}
+	\pi^{-}_{k} &=& \N(\boldsymbol{x_i} | \boldsymbol{\mu_k}, \Sigma_k) \times \pi_k \\
+	\nonumber \\
+	\pi^*_k &=& \frac{\pi^{-}_k}{\sum_{l = 1}^{K}{\pi^{-}_l}}
 \end{eqnarray}
 
-\subsection{Posterior distribution of $\pi$}
-The posterior distribution of $\pi$ is represented as follows.
+\subsection{Posterior distribution of $\boldsymbol{\pi}$}
+The posterior distribution of $\boldsymbol{\pi}$ is represented as follows.
 \begin{eqnarray}
-	p(\pi | \alpha_0, z_{1:N}) &\propto& p(z_{1:N} | \pi, \alpha_0) p(\pi | \alpha_0)\\
-	&\propto& p(z_{1:N} | \pi) p(\pi | \alpha_0)\\
-	&=& \prod_{i=1}^{N}{\left\{ p(z_i | \pi) \right\} } p(\pi | \alpha_0)\\
-	&=& \prod_{i=1}^{N}{\left\{ {\rm Cat}(z_i | \pi) \right\} } {\rm Dir}(\pi | \alpha_0)\\
-	&=& {\rm Mult}(m | \pi) {\rm Dir}(\pi | \alpha_0)\\
-	&=& {\rm Dir}(\pi | \hat{\alpha})\\
+	p(\boldsymbol{\pi} | \boldsymbol{\alpha_0}, z_{1:N}) &\proptoas{\boldsymbol{\pi}}& p(z_{1:N} | \boldsymbol{\pi}) p(\boldsymbol{\pi} | \boldsymbol{\alpha_0})\\
+	&=& \prod_{i=1}^{N}{\left\{ p(z_i | \boldsymbol{\pi}) \right\} } p(\boldsymbol{\pi} | \boldsymbol{\alpha_0})\\
+	&=& \prod_{i=1}^{N}{\left\{ \Cat(z_i | \boldsymbol{\pi}) \right\} } \Dir(\boldsymbol{\pi} | \boldsymbol{\alpha_0})\\
+	&=& \Mult(\boldsymbol{m} | \boldsymbol{\pi}) \Dir(\boldsymbol{\pi} | \boldsymbol{\alpha_0})\\
+	&=& \Dir(\boldsymbol{\pi} | \boldsymbol{\alpha^*})\\
 	\nonumber \\
 	m_k &=& \sum_{i=1}^{N}{\delta(z_i = k)}\\
 	\delta(\text{CONDITION}) &=&
@@ -69,41 +84,31 @@ The posterior distribution of $\pi$ is represented as follows.
 		1 & (\text{CONDITION is true})
 	\end{array}
 	\right.\\
-	\hat{\alpha} &=& m + \alpha_0
+	\nonumber\\
+	\boldsymbol{\alpha^*} &=& \boldsymbol{m} + \boldsymbol{\alpha_0}
 \end{eqnarray}
-Here, ${\rm Mult}$ represents multinomial distribution.
+Here, $\Mult$ represents multinomial distribution.
 
-\subsection{Posterior distribution of $\Sigma_k$}
-The posterior distribution of $\Sigma_k$ is represented as follows.
+\subsection{Posterior distribution of $\boldsymbol{\mu_k}$ and $\Sigma_k$}
+The posterior distribution of $\boldsymbol{\mu_k}$ and $\Sigma_k$ is represented as follows.
 \begin{eqnarray}
-	p(\Sigma_k | \nu_0, \Psi_0, x_{1:N}, z_{1:N}, \mu_k) &=& p(\Sigma_k | \nu_0, \Psi_0, x^{k}_{1:M}, \mu_k)\\
-	&\propto& p(x^{k}_{1:M} | \nu_0, \Psi_0, \mu_k, \Sigma_k) p(\Sigma_k | \nu_0, \Psi_0, \mu_k)\\
-	&\propto& p(x^{k}_{1:M} | \mu_k, \Sigma_k) p(\Sigma_k | \nu_0, \Psi_0)\\
-	&=& \prod_{j=1}^{M}{\left\{ p(x^{k}_{j} | \mu_k, \Sigma_k) \right\}} p(\Sigma_k | \nu_0, \Psi_0)\\
-	&=& \prod_{j=1}^{M}{\left\{ {\rm N}(x^{k}_{j} | \mu_k, \Sigma_k) \right\}} {\rm W}^{-1}(\Sigma_k | \nu_0, \Psi_0)\\
-	&=& {\rm W}^{-1}(\Sigma_k | \hat{\nu}, \hat{\Psi})\\
+	\lefteqn{
+		p(\boldsymbol{\mu_k}, \Sigma_k | \boldsymbol{\mu_0}, \lambda_0, \Psi_0, \nu_0, \boldsymbol{x_{1:N}}, z_{1:N})
+	}\nonumber \\
+	&\proptoas{\boldsymbol{\mu_k}, \Sigma_k}& p(\boldsymbol{x^{k}_{1:M}} | \boldsymbol{\mu_k}, \Sigma_k) p(\boldsymbol{\mu_k}, \Sigma_k | \boldsymbol{\mu_0}, \lambda_0, \Psi_0, \nu_0)\\
+	&=& \prod_{i=1}^{M}{\left\{ p(z_i | \boldsymbol{\mu_k}, \Sigma_k) \right\}} p(\boldsymbol{\mu_k}, \Sigma_k | \boldsymbol{\mu_0}, \lambda_0, \Psi_0, \nu_0) \\
+	&=& \prod_{i=1}^{M}{\left\{ \N(z_i | \boldsymbol{\mu_k}, \Sigma_k) \right\}} \NIW(\boldsymbol{\mu_k}, \Sigma_k | \boldsymbol{\mu_0}, \lambda_0, \Psi_0, \nu_0) \\
+	&=& \NIW(\boldsymbol{\mu_k}, \Sigma_k | \boldsymbol{\mu^*}, \lambda^*, \Psi^*, \nu^*) \\
 	\nonumber \\
-	x^{k}_{1:M} &=& \Set{ x_i | z_i = k, i=1, \ldots, N }\\
-	m_k &=& \sum_{i=1}^{N}{\delta(z_i = k)}\\
-	\hat{\nu} &=& m_k + \nu_0\\
-	\hat{\Psi} &=& \sum_{j=1}^{M}{\left\{ \left(x_j - \mu_k \right) \cdot \left( x_j - \mu_k \right)^T \right\}} + \Psi_0
-\end{eqnarray}
-
-\subsection{Posterior distribution of $\mu_k$}
-The posterior distribution of $\mu_k$ is represented as follows.
-\begin{eqnarray}
-	p(\mu_k | \mu_0, \Sigma_0, x_{1:N}, z_{1:N}, \Sigma_k) &=& p(\mu_k | \mu_0, \Sigma_0, x^{k}_{1:M}, \Sigma_k)\\
-	&\propto& p(x^{k}_{1:M} | \mu_0, \Sigma_0, \mu_k, \Sigma_k) p(\mu_k | \mu_0, \Sigma_0, \Sigma_k)\\
-	&\propto& p(x^{k}_{1:M} | \mu_k, \Sigma_k) p(\mu_k | \mu_0, \Sigma_0)\\
-	x^{k}_{1:M} &=& \left\{ x_i | z_i = k, i=1, \ldots, N \right\}\\
-	&=& \prod_{j=1}^{M}{\left\{ p(x^{k}_{j} | \mu_k, \Sigma_k) \right\}} p(\mu_k | \mu_0, \Sigma_0)\\
-	&=& \prod_{j=1}^{M}{\left\{ {\rm N}(x^{k}_{j} | \mu_k, \Sigma_k) \right\}} {\rm N}(\mu_k | \mu_0, \Sigma_0)\\
-	&=& {\rm N}(\mu_k | \hat{\mu}, \hat{\Sigma})\\
+	\boldsymbol{x^{k}_{1:M_k}} &=& \Set{ \boldsymbol{x_i} | z_i = k, i=1, \ldots, N }\\
+	M_k &=& \sum_{i=1}^{N}{\delta(z_i = k)} \\
+	\boldsymbol{\bar{x}^k} &=& \frac{1}{M_k} \sum_{i=1}^{M_k}{\boldsymbol{x_i^k}} \\
+	S^k &=& \sum_{i=1}^{M_k}{\left( \boldsymbol{x_i^k} - \boldsymbol{\bar{x}^k} \right) \left( \boldsymbol{x_i^k} - \boldsymbol{\bar{x}^k} \right)^T} \\
 	\nonumber \\
-	x^{k}_{1:M} &=& \Set{ x_i | z_i = k, i=1, \ldots, N }\\
-	m_k &=& \sum_{i=1}^{N}{\delta(z_i = k)}\\
-	\hat{\Sigma} &=& \left( m_k \Sigma^{-1}_k + \Sigma^{-1}_0 \right)^{-1}\\
-	\hat{\mu} &=& \hat{\Sigma} \cdot \left\{ \Sigma^{-1}_k \cdot \sum_{j=1}^{M}{\left( x^k_j \right) + \Sigma^{-1}_0 \cdot \mu_0} \right\}
+	\lambda^* &=& M_k + \lambda_0 \\
+	\boldsymbol{\mu^*} &=& \frac{M_k \cdot \boldsymbol{\bar{x}^k} + \lambda_0 \cdot \boldsymbol{\mu_0}}{M_k + \lambda_0}\\
+	\nu^* &=& M_k + \nu_0\\
+	\Psi^* &=& S^k + \frac{M_k \lambda_0}{M_k + \lambda_0} \left( \boldsymbol{\bar{x}^k} - \boldsymbol{\mu_0} \right) \left( \boldsymbol{\bar{x}^k} - \boldsymbol{\mu_0} \right)^T + \Psi_0
 \end{eqnarray}
 
 \section{Experiments}
@@ -112,58 +117,55 @@ This section shows results of experiments.
 \subsection{Truth parameters}
 Parameters which were used in this experiments represented follows.
 \begin{eqnarray}
-	\pi^* &=& \left[ \begin{array}{ccc}
+	\boldsymbol{\pi^*} &=& \left[ \begin{array}{ccc}
 		0.7 & 0.2 & 0.1
 	\end{array}
 	\right]\\
-	\mu^*_{1:3} &=& 
+	\boldsymbol{\mu^*_{1:3}} &=& 
 	\left[\begin{array}{c}
-		3.0\\
-		0.0
+		3\\
+		0
 	\end{array}\right]
 	, 
 	\left[\begin{array}{c}
-		-3.0\\
-		0.0
+		-3\\
+		0
 	\end{array}\right]
 	, 
 	\left[\begin{array}{c}
-		0.0\\
-		5.0
+		0\\
+		5
 	\end{array}\right]\\
 	\Sigma^*_{1:3} &=& 
 	\left[\begin{array}{cc}
-		1.0 & 0.0\\
-		0.0 & 1.0
+		1 & 0\\
+		0 & 1
 	\end{array}\right]
 	, 
 	\left[\begin{array}{cc}
-		1.0 & 0.0\\
-		0.0 & 1.0
+		1 & 0\\
+		0 & 1
 	\end{array}\right]
 	, \left[\begin{array}{cc}
-		1.0 & 0.0\\
-		0.0 & 1.0
+		1 & 0\\
+		0 & 1
 	\end{array}\right]
 \end{eqnarray}
 
 \subsection{Hyperparameters}
 Hyperparameters which were used in this experiments represented follows.
 \begin{eqnarray}
-	\alpha_0 &=& \left[\begin{array}{ccc} 1.0 & 1.0 & 1.0 \end{array}\right]\\
-	\mu_0 &=& \left[\begin{array}{c}
-		0.0\\
-		0.0
-	\end{array}\right]\\
-	\Sigma_0 &=& \left[\begin{array}{cc}
-		1.0 & 0.0\\
-		0.0 & 1.0
-	\end{array}\right]\\
-	\nu_0 &=& 2.0\\
+	\boldsymbol{\alpha_0} &=& \left[\begin{array}{cccc} 1 & 1 & 1 & 1\end{array}\right]\\
+	\nu_0 &=& 2\\
 	\Psi_0 &=& \left[\begin{array}{cc}
-		1.0 & 0.0\\
-		0.0 & 1.0
-	\end{array}\right]
+		1 & 0\\
+		0 & 1
+	\end{array}\right]\\
+	\boldsymbol{\mu_0} &=& \left[\begin{array}{c}
+		0\\
+		0
+	\end{array}\right]\\
+	\lambda_0 &=& 1
 \end{eqnarray}
 
 \subsection{Experiment 1}
@@ -228,7 +230,7 @@ If you want to do, please run following commands.
 	\item \verb|python GMM_Gibbs.py|\\
 		Run Gibbs sampling. You can get result in ``tmp'' directory.
 	\item \verb|sh make_gif.sh|\\
-		Convert images in ``tmp'' directory to ``result.gif.''
+		Convert images in ``fig'' directory to ``result.gif.''
 \end{enumerate}
 
 
