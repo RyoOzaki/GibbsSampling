@@ -9,17 +9,6 @@ import scipy.stats as stats
 from tqdm import trange
 
 #%% Functions.
-def counting(datas, size, out=None):
-    if out is None:
-        cnt = np.zeros(size, dtype=int)
-    else:
-        cnt = out
-        cnt[:] = 0
-    if datas is not None:
-        for i in range(size):
-            cnt[i] = (datas == i).sum()
-    return cnt
-
 def rad2deg(rad):
     return rad * 180.0 / np.pi
 
@@ -136,7 +125,7 @@ for t in trange(ITERATION):
     for n in range(N):
         pi_ast = p_xi[n] / p_xi[n].sum()
         hidden_state[n] = np.random.choice(K, p=pi_ast)
-    m = counting(hidden_state, K)
+    m = np.bincount(hidden_state, minlength=K)
 
     # Resampling pi.
     alpha_ast = alpha_0 + m
