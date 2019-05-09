@@ -42,7 +42,7 @@ def plot_datas(datas, color=None, marker="+", axes=None):
 if __name__ == "__main__":
     from scipy.stats import multivariate_normal
     mean = np.zeros(2)
-    cov = np.identity(2,2) * 20
+    cov = np.identity(2) * 20
     cov[0, 0] = 10
     cov[0, 1] = -8
     cov[1, 0] = -8
