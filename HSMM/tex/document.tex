@@ -57,37 +57,38 @@ The probabilistic generative process of HMM is shown below.
 	t'_s &=& \sum_{s'=1}^{s}{D_{s'}} \\
 	&=& t_s + D_s - 1 \\
 	y_{t_s:t'_s} &=& z_s \\
-	x_t  &\sim& p(x | \theta_{y_t})\\
+	x_t &\sim& p(x | \theta_{y_t})\\
 	\nonumber \\
 	k &=& 1, 2, \ldots, K \\
 	s &=& 1, 2, \ldots, S \\
 	t &=& 1, \ldots, T
 \end{eqnarray}
 Here, $\Dir$ represents the Dirichlet distribution, $\Cat$ represents the categorical distribution.
-And, you can use the any emission distribution $p(x | \theta_{t})$ and prior  distribution $p(\theta | \lambda_\theta)$.
+And, you can use the any emission distribution $p(x | \theta_{t})$ and the prior distribution $p(\theta | \lambda_\theta)$.
+Similary, you can use the any duration distribution of super-state $p(D | q_k)$ and the prior distribution $p(q | \lambda_q)$.
 For example, set $p(x | \theta_{t})$ to multivariate normal distribution and set $p(\theta | \lambda_\theta)$ to normal-inverse-Wishart distribution.
 
 \section{Posterior distribution}
 This section shows the posterior distributions.
 
 \subsection{Posterior distribution of $z_s$ and $D_s$}
-When sample the super-state sequence $z_{1:S}$ and the duration of super-states $D_{1:S}$, basically we use the blocked Gibbs sampling.
+Basically we use the blocked Gibbs sampling when sample the super-state sequence $z_{1:S}$ and the duration of super-states $D_{1:S}$.
 In this section, we shows the sampling algorithm using blocked Gibbs sampling.
 \par
-In the blocked Gibbs sampling of HSMM, the super-state sequence $z_{1:S}$ and   the duration of super-states $D_{1:S}$ are sampled by the conditional posterior distribution $p(z_{1:S} , D_{1:S}| x_{1:T}, \boldsymbol{\pi_{0:K}}, \theta_{1:K}, q_{1:K})$.
+In the blocked Gibbs sampling of HSMM, the super-state sequence $z_{1:S}$ and the duration of super-states $D_{1:S}$ are sampled by the conditional posterior distribution $p(z_{1:S} , D_{1:S}| x_{1:T}, \boldsymbol{\pi_{0:K}}, \theta_{1:K}, q_{1:K})$.
 The distribution is little bit redundancy, so, we don't write the $\boldsymbol{\pi_{0:K}}$, $\theta_{1:K}$ and $q_{1:K}$ often in condition part.
-Here, $p(z_{1:S} , D_{1:S}| x_{1:T}$ can be described as follows.
+Here, $p(z_{1:S} , D_{1:S}| x_{1:T})$ can be described as follows.
 
 \begin{eqnarray}
 	p(z_{1:S}, D_{1:S} | x_{1:T})
 	&=&
-	\prod_{s=1}^{S}{\left\{ p(z_s, D_s  |  z_{1:s-1}, D_{1:s-1}, x_{1:T}) \right\}}\\
+	\prod_{s=1}^{S}{\left\{ p(z_s, D_s | z_{1:s-1}, D_{1:s-1}, x_{1:T}) \right\}}\\
 	&=&
-	\prod_{s=1}^{S}{\left\{ p(z_s |  z_{1:s-1}, D_{1:s-1}, x_{1:T}) p(D_s | z_{1:s}, D_{1:s-1}, x_{1:T})\right\}} \nonumber \\
+	\prod_{s=1}^{S}{\left\{ p(z_s | z_{1:s-1}, D_{1:s-1}, x_{1:T}) p(D_s | z_{1:s}, D_{1:s-1}, x_{1:T})\right\}} \nonumber \\
 \end{eqnarray}
 And then, the term regarding sampling the $z_s$ is as follows.
 \begin{eqnarray}
-	p(z_s = i |  z_{1:s-1}, D_{1:s-1}, x_{1:T})
+	p(z_s = i | z_{1:s-1}, D_{1:s-1}, x_{1:T})
 	&\proptoas{z_s}&
 	p(x_{1:T} | z_{1:s-1}, z_s = i, D_{1:s-1}) p(z_s = i | z_{1:s-1}, D_{1:s-1}) \nonumber \\ \\
 	&\proptoas{z_s}&
@@ -145,13 +146,13 @@ In addition, those are calculated as follows.
 	&=&
 	\sum_{d=1}^{T-t_s}{p(x_{t_s:T}, D_s = d | z_s = i)} \\
 	&=&
-	\sum_{d=1}^{T-t_s}{p(x_{t_s:T} | z_s = i, D_s = d) p(D_s = d  | z_s = i)} \\
+	\sum_{d=1}^{T-t_s}{p(x_{t_s:T} | z_s = i, D_s = d) p(D_s = d | z_s = i)} \\
 	&=&
-	\sum_{d=1}^{T-t_s}{p(x_{t_s:t_s+d-1} | z_s = i, D_s = d) p(x_{t_s+d:T} | z_s = i, D_s = d) p(D_s = d  | z_s = i)} \nonumber \\ \\
+	\sum_{d=1}^{T-t_s}{p(x_{t_s:t_s+d-1} | z_s = i, D_s = d) p(x_{t_s+d:T} | z_s = i, D_s = d) p(D_s = d | z_s = i)} \nonumber \\ \\
 	&=&
-	\sum_{d=1}^{T-t_s}{p(x_{t_s:t'_s} | z_s = i, D_s = d) p(x_{t_{s+1}:T} | z_s = i) p(D_s = d  | z_s = i)} \\
+	\sum_{d=1}^{T-t_s}{p(x_{t_s:t'_s} | z_s = i, D_s = d) p(x_{t_{s+1}:T} | z_s = i) p(D_s = d | z_s = i)} \\
 	&=&
-	\sum_{d=1}^{T-t_s}{p(x_{t_s:t'_s} | z_s = i, D_s = d) \beta_{t_{s+1}}(i) p(D_s = d  | z_s = i)}\\
+	\sum_{d=1}^{T-t_s}{p(x_{t_s:t'_s} | z_s = i, D_s = d) \beta_{t_{s+1}}(i) p(D_s = d | z_s = i)}\\
 t'_s &=& t_s + d - 1 \\
 t_{s+1} &=& t_s + d
 \end{eqnarray}
@@ -173,7 +174,7 @@ Summarize, the formulas about backward message are as follows.
 	\sum_{j}{\beta_{t_s}^{*}(j) p(z_s = j | z_{s-1} = i)} \\
 	\beta_{t_s}^{*}(i)
 	&=&
-	\sum_{d=1}^{T-t_s}{p(x_{t_s:t'_s} | z_s = i, D_s = d) \beta_{t_{s+1}}(i) p(D_s = d  | z_s = i)} \\
+	\sum_{d=1}^{T-t_s}{p(x_{t_s:t'_s} | z_s = i, D_s = d) \beta_{t_{s+1}}(i) p(D_s = d | z_s = i)} \\
 	\nonumber \\
 	t'_s &=& t_s + d - 1 \\
 	t_{s+1} &=& t_s + d

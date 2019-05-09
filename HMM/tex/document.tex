@@ -57,7 +57,7 @@ The probabilistic generative process of HMM is shown below.
 	t &=& 1, \ldots, T
 \end{eqnarray}
 Here, $\Dir$ represents the Dirichlet distribution, $\Cat$ represents the categorical distribution.
-And, you can use the any emission distribution $p(x | \theta_{t})$ and prior  distribution $p(\theta | \lambda_\theta)$.
+And, you can use the any emission distribution $p(x | \theta_{t})$ and prior distribution $p(\theta | \lambda_\theta)$.
 For example, set $p(x | \theta_{t})$ to multivariate normal distribution and set $p(\theta | \lambda_\theta)$ to normal-inverse-Wishart distribution.
 
 \section{Posterior distribution}
@@ -67,7 +67,7 @@ This section shows the posterior distributions.
 When sample the latent variables sequence, basically we use the blocked Gibbs sampling.
 In this section, we shows the sampling algorithm using blocked Gibbs sampling.
 \par
-In the blocked Gibbs sampling of HMM, the latent variable sequence $z_{1:T}$  are sampled by the conditional posterior distribution $p(z_{1:T} | x_{1:T}, \boldsymbol{\pi_{0:K}}, \theta_{1:K})$.
+In the blocked Gibbs sampling of HMM, the latent variable sequence $z_{1:T}$ are sampled by the conditional posterior distribution $p(z_{1:T} | x_{1:T}, \boldsymbol{\pi_{0:K}}, \theta_{1:K})$.
 The distribution is little bit redundancy, so, we don't write the $\boldsymbol{\pi_{0:K}}$ and $\theta_{1:K}$ often in condition part.
 Here, $p(z_{1:T} | x_{1:T})$ can be described as follows.
 \begin{eqnarray}
